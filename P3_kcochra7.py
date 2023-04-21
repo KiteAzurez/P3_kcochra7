@@ -1,15 +1,19 @@
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import Perceptron
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
 
-# col_names = ['sepal_length', 'sepal_width','petal_length','petal_width','type']
-# data = pd.read_csv("iris.csv", skiprows=1, header =None, names=col_names)
-# data.head(10)
-
-
-data = pd.read_csv("wines.csv",header =None)
+col_names = ['sepal_length', 'sepal_width','petal_length','petal_width','type']
+data = pd.read_csv("iris.csv", skiprows=1, header =None, names=col_names)
 data.head(10)
-print(data)
+
+# col_names = ['Type', 'Alcohol','MalicAcid','Ash','Alcalinity','Magnesium','Phenols','Flavanoids','Nonflavanoid',
+#              'Proanthocyanins','ColorIntensity', 'Hue','DilutedWines','Proline']
+# data = pd.read_csv("wine_big.csv", skiprows=1, header =None, names = None)
+# data.head(10)
+# print(data)
+
 #NODE CLASS
 class Node():
     def __init__(self, feature_index=None, threshhold=None, left=None, right=None, info_gain=None,value=None):
@@ -43,6 +47,7 @@ class DecisionTreeClassifier():
         #Recursive function to build the tree
         print("building tree")
         X, Y = dataset[:,:-1], dataset[:,-1]
+        print(Y)
         num_samples, num_features = np.shape(X)
 
         #split until stopping conditions are met
@@ -85,7 +90,7 @@ class DecisionTreeClassifier():
                 if len(dataset_left)>0 and len(dataset_right)>0:
                     y,left_y,right_y = dataset[:,-1], dataset_left[:,-1], dataset_right[:,-1]
                     #compute information gain
-                    curr_info_gain = self.information_gain(y,left_y,right_y, "gini")
+                    curr_info_gain = self.information_gain(y,left_y,right_y, "entropy")
                     #upate the best split if needed
                     if curr_info_gain>max_info_gain:
                         best_split["feature_index"] = feature_index
@@ -115,7 +120,7 @@ class DecisionTreeClassifier():
         #Since we got rid of the log, we save a lot of time.
         #
         if mode == "gini":
-            gain = self.gini_index(parent) - weight_l*self.gini_index(l_child) + weight_r*self.gini_index(r_child)
+            gain = self.gini_index(parent) - (weight_l*self.gini_index(l_child) + weight_r*self.gini_index(r_child))
         else:
             gain = self.entropy(parent) - (weight_l*self.entropy(l_child) + weight_r*self.entropy(r_child))
         return gain
@@ -130,7 +135,9 @@ class DecisionTreeClassifier():
             p_cls = len(y[y==cls])/len(y)
             #double astrix in python is power pow(2) 
             gini += p_cls**2
-        return 1 - gini
+            
+        
+        return (1 - gini)
     def entropy(self, y):
         #Function to compute entropy
         #Equation: E-pi * log(pi)
@@ -184,7 +191,7 @@ if __name__=='__main__':
     X = data.iloc[:,:-1].values
     Y = data.iloc[:,-1].values.reshape(-1,1)
     from sklearn.model_selection import train_test_split
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size =.2, random_state = 41)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size =.1, random_state = 41)
 
     classifier = DecisionTreeClassifier(min_samples_split =3, max_depth=3)
     classifier.fit(X_train,Y_train)
@@ -193,4 +200,6 @@ if __name__=='__main__':
 
     Y_pred = classifier.predict(X_test)
     from sklearn.metrics import accuracy_score
-    print(accuracy_score(Y_test, Y_pred))
+    print("Accuaracy score: " + str(accuracy_score(Y_test, Y_pred)))
+    print("\nConfusion Matrix: \n" +str(confusion_matrix(Y_test, Y_pred))) 
+    print("\nClassification report: \n" + str(classification_report(Y_test, Y_pred)))
