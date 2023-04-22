@@ -4,15 +4,15 @@ from sklearn.linear_model import Perceptron
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
 
-col_names = ['sepal_length', 'sepal_width','petal_length','petal_width','type']
-data = pd.read_csv("iris.csv", skiprows=1, header =None, names=col_names)
-data.head(10)
-
-# col_names = ['Type', 'Alcohol','MalicAcid','Ash','Alcalinity','Magnesium','Phenols','Flavanoids','Nonflavanoid',
-#              'Proanthocyanins','ColorIntensity', 'Hue','DilutedWines','Proline']
-# data = pd.read_csv("wine_big.csv", skiprows=1, header =None, names = None)
+# col_names = ['sepal_length', 'sepal_width','petal_length','petal_width','type']
+# data = pd.read_csv("iris.csv", skiprows=1, header =None, names=col_names)
 # data.head(10)
-# print(data)
+
+col_names = ['Type', 'Alcohol','MalicAcid','Ash','Alcalinity','Magnesium','Phenols','Flavanoids','Nonflavanoid',
+             'Proanthocyanins','ColorIntensity', 'Hue','DilutedWines','Proline']
+data = pd.read_csv("wine_big.csv", skiprows=1, header =None, names = None)
+data.head(10)
+print(data)
 
 #NODE CLASS
 class Node():
@@ -188,8 +188,16 @@ class DecisionTreeClassifier():
 
 #Main Function
 if __name__=='__main__':
-    X = data.iloc[:,:-1].values
-    Y = data.iloc[:,-1].values.reshape(-1,1)
+    #from the -13 column, it means we start from the last set in the array
+    #so in our wine database, we start from Alcohol. then the -1  lets the code know
+    #we are starting from the right side of the array. Aka the last colum in the array 
+
+    #I dont think -1 does this. -1 is skipping my last column. 
+    #Maybe I can make a copy of the data set, delete the column then set it to X. 
+    X = data.iloc[:,-13:-1].values
+    Y = data.iloc[:,0].values.reshape(-1,1)
+    print(Y)
+    print(X)
     from sklearn.model_selection import train_test_split
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size =.1, random_state = 41)
 
